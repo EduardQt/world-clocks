@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>What time is it?</title>
+
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<style>
+    body {
+        background: url(https://bilder.apollo.se/dubai-1556981090-134282-ImageGalleryX2.jpg);
+    }
+</style>
+<div style="padding-top: 110px;text-align: center;">
+    <div style="color: white">
+        Asia
+        <select id="asia">
+        </select>
+    </div>
+    <div style="color: white">
+        America
+        <select id="america">
+        </select>
+    </div>
+</div>
+<div style="width: 100%; text-align: center">
+    <div class="clock">
+        <div>
+            <div class="info date"></div>
+            <div class="info day"></div>
+        </div>
+        <div class="dot"></div>
+        <div>
+            <div class="hour-hand"></div>
+            <div class="minute-hand"></div>
+            <div class="second-hand"></div>
+        </div>
+        <div>
+            <span class="h3">3</span>
+            <span class="h6">6</span>
+            <span class="h9">9</span>
+            <span class="h12">12</span>
+        </div>
+        <div class="diallines"></div>
+    </div>
+</div>
+<span id="current-time" style="width: 100%;text-align: center;padding-top: 30px;color: white;"></span>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let timeZone = 'Europe/Stockholm';
+
+    async function fetchTimeZones() {
+        const times = await fetch("timezone.json");
+        const json = await times.json();
+        for (const country of json) {
+            const split = country.split("/");
+            const continent = split[0];
+            const city = split[1];
+            switch (continent) {
+                case "America":
+                    $('#america').append($('<option>', {
+                        value: country,
+                        text: city
+                    }));
+                    break;
+                case "Asia":
+                    $('#asia').append($('<option>', {
+                        value: country,
+                        text: city
+                    }));
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    fetchTimeZones().then(() => {
+        document.getElementById('america').onchange = onTimezoneChange;
+        document.getElementById('asia').onchange = onTimezoneChange;
+        setInterval(intervalFunction, 1000);
+    });
+
+    function onTimezoneChange(event) {
+        timeZone = event.target.value;
+    }
+
+    var analogLines = document.getElementsByClassName('diallines');
+    var clockElement = document.getElementsByClassName('clock')[0];
+
+    for (var i = 1; i < 60; i++) {
+        clockElement.innerHTML += "<div class='diallines'></div>";
+        analogLines[i].style.transform = "rotate(" + 6 * i + "deg)";
+    }
+
+    function intervalFunction() {
+        hourElement = document.querySelector('.hour-hand');
+        minuteElement = document.querySelector('.minute-hand');
+        secondElement = document.querySelector('.second-hand');
+
+
+        const date = new Date();
+        options = {
+            timeZone: timeZone,
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3
+        }
+
+        let currentTime = new Intl.DateTimeFormat('en-US', options).format(date);
+
+        $("#current-time").text("The time in " + timeZone + " is " + currentTime);
+
+        let hr = currentTime.split(':')[0];
+        let min = currentTime.split(':')[1];
+        let sec = currentTime.split(':')[2];
+
+        hourRotation = 30 * hr + min / 2;
+        minuteRotation = 6 * min;
+        secondRotation = 6 * sec;
+
+        hourElement.style.transform = `rotate(${hourRotation}deg)`;
+        minuteElement.style.transform = `rotate(${minuteRotation}deg)`;
+        secondElement.style.transform = `rotate(${secondRotation}deg)`;
+    }
+
+</script>
+
+</body>
+</html>
